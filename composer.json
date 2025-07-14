@@ -1,0 +1,13 @@
+{
+    "name": "escalafon/app",
+    "description": "Sistema de Escalafón",
+    "type": "project",
+    "require": {
+        "firebase/php-jwt": "^6.11"
+    },
+    "autoload": {
+        "psr-4": {
+            "": "app/"
+        }
+    }
+}
