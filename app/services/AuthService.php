@@ -1,33 +1,42 @@
 <?php
 class AuthService {
-    public function authenticate($username, $password) {
-        // Validación básica
-        if (empty($username) || empty($password)) {
-            throw new Exception('Credenciales inválidas');
-        }
-        
-        // Aquí iría la lógica real de autenticación con la base de datos
-        $user = $this->validateCredentials($username, $password);
-        
-        if (!$user) {
-            throw new Exception('Usuario o contraseña incorrectos');
-        }
-        
-        return JWTAuth::generateToken($user['id']);
+    private $empleadoRepository;
+
+    public function __construct() {
+        $this->empleadoRepository = new EmpleadoRepository();
     }
-    
-    private function validateCredentials($username, $password) {
-        // Simulación: en un caso real se consultaría la base de datos
-        $validUser = [
-            'id' => 1,
-            'username' => 'admin',
-            'password' => password_hash('admin123', PASSWORD_DEFAULT)
-        ];
+
+    public function registrarEmpleado($data) {
+        // Validar DNI único
+        if ($this->empleadoRepository->buscarPorDNI($data['dni'])) {
+            throw new Exception("El DNI ya está registrado");
+        }
+
+        // Validar formato de contraseña
+        if (strlen($data['password']) < 8) {
+            throw new Exception("La contraseña debe tener al menos 8 caracteres");
+        }
+
+        return $this->empleadoRepository->crearEmpleado($data);
+    }
+
+    public function autenticar($dni, $password) {
+        $empleado = $this->empleadoRepository->buscarPorDNI($dni);
         
-        if ($username === $validUser['username'] && password_verify($password, $validUser['password'])) {
-            return $validUser;
+        if (!$empleado) {
+            throw new Exception("Empleado no encontrado");
         }
         
-        return null;
+        if (!password_verify($password, $empleado['password'])) {
+            throw new Exception("Contraseña incorrecta");
+        }
+        
+        // Eliminar contraseña antes de devolver
+        unset($empleado['password']);
+        
+        return [
+            'empleado' => $empleado,
+            'token' => JWTAuth::generateToken($empleado['id'])
+        ];
     }
 }

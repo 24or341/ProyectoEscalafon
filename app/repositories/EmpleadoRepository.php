@@ -7,26 +7,14 @@ class EmpleadoRepository {
     }
 
     public function crearEmpleado($data) {
-        $sql = "INSERT INTO escalafon.empleado (
-            nombres, 
-            apellidos, 
-            dni, 
-            fecha_nacimiento, 
-            direccion, 
-            telefono, 
-            email, 
-            afp_id, 
-            fecha_ingreso
+        $sql = "INSERT INTO empleado (
+            nombres, apellidos, dni, fecha_nacimiento, 
+            direccion, telefono, email, afp_id, 
+            fecha_ingreso, password
         ) VALUES (
-            :nombres, 
-            :apellidos, 
-            :dni, 
-            :fecha_nacimiento, 
-            :direccion, 
-            :telefono, 
-            :email, 
-            :afp_id, 
-            :fecha_ingreso
+            :nombres, :apellidos, :dni, :fecha_nacimiento, 
+            :direccion, :telefono, :email, :afp_id, 
+            :fecha_ingreso, :password
         ) RETURNING id";
         
         $stmt = $this->db->prepare($sql);
@@ -39,14 +27,15 @@ class EmpleadoRepository {
             ':telefono' => $data['telefono'],
             ':email' => $data['email'],
             ':afp_id' => $data['afp_id'],
-            ':fecha_ingreso' => $data['fecha_ingreso']
+            ':fecha_ingreso' => $data['fecha_ingreso'],
+            ':password' => password_hash($data['password'], PASSWORD_BCRYPT)
         ]);
         
         return $stmt->fetchColumn();
     }
 
     public function buscarPorDNI($dni) {
-        $sql = "SELECT * FROM escalafon.empleado WHERE dni = :dni";
+        $sql = "SELECT * FROM empleado WHERE dni = :dni";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':dni' => $dni]);
         return $stmt->fetch(PDO::FETCH_ASSOC);

@@ -18,13 +18,15 @@ try {
     $router = new Router();
     
     // ===== RUTAS PÚBLICAS =====
-    $router->post('/login', 'AuthController@login');
+    $router->post('/register', 'AuthController@register'); // Registrar nuevo empleado
+    $router->post('/login', 'AuthController@login');       // Iniciar sesión
     
     // ===== RUTAS PROTEGIDAS =====
     $router->group(['middleware' => 'auth'], function($router) {
         // Empleados
-        $router->get('/empleados', 'EmpleadoController@index');
+        $router->get('/empleados/{id}', 'EmpleadoController@show');
         $router->post('/empleados', 'EmpleadoController@store');
+        $router->post('/verify-token', 'AuthController@verifyToken');
         
         // Documentos
         $router->post('/documentos', 'DocumentoController@upload');
@@ -34,7 +36,31 @@ try {
         
         // ... otras rutas
     });
-    
+
+    $requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+    if (preg_match('/\.(?:html|css|js|png|jpg|jpeg|gif)$/', $requestPath)) {
+        $filePath = __DIR__ . $requestPath;
+        
+        if (file_exists($filePath)) {
+            $mimeTypes = [
+                'html' => 'text/html',
+                'css'  => 'text/css',
+                'js'   => 'application/javascript',
+                'png'  => 'image/png',
+                'jpg'  => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'gif'  => 'image/gif'
+            ];
+            
+            $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+            $contentType = $mimeTypes[$ext] ?? 'application/octet-stream';
+            
+            header("Content-Type: $contentType");
+            readfile($filePath);
+            exit;
+        }
+    }
     $router->dispatch();
 
 } catch (Exception $e) {
