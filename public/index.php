@@ -3,6 +3,10 @@ require_once __DIR__ . '/../app/config/Config.php';
 require_once __DIR__ . '/../app/config/Database.php';
 require_once __DIR__ . '/../app/core/Router.php';
 
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
 // Manejo de errores según entorno
 try {
     Config::load();
